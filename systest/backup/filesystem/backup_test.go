@@ -53,6 +53,23 @@ var (
 	}
 )
 
+func TestBackupOfOldRestore(t *testing.T) {
+	conn, err := grpc.Dial(testutil.SockAddr, grpc.WithInsecure())
+	require.NoError(t, err)
+	dg := dgo.NewDgraphClient(api.NewDgraphClient(conn))
+
+	ctx := context.Background()
+
+	require.NoError(t, dg.Alter(ctx, &api.Operation{DropAll: true}))
+	dirSetup(t)
+	_ = runBackup(t, 3, 1)
+	oldBackupDir := "data/backups/backup1"
+	restored := runRestore(t, oldBackupDir, "", math.MaxUint64)
+	fmt.Printf("%v", restored)
+	dirs := runBackup(t, 3, 1)
+	fmt.Printf("%v", dirs)
+}
+
 func TestBackupFilesystem(t *testing.T) {
 	conn, err := grpc.Dial(testutil.SockAddr, grpc.WithInsecure())
 	require.NoError(t, err)
